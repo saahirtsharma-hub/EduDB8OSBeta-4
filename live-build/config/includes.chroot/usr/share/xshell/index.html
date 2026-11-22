@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EDUDB8OS</title>
+<style>
+:root{--g:linear-gradient(90deg,#ff0f1f 0%,#2323ff 35%,#7f25ff 70%,#845040 100%);--red:#ff3338}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:"Noto Sans",system-ui,sans-serif;color:#fff}
+body{background:var(--g)}
+#lock,#desk{position:absolute;inset:0}#desk{display:none}
+body.in #lock{display:none}body.in #desk{display:block}
+#clock{position:absolute;top:9vh;width:100%;text-align:center;font-weight:800;font-size:min(20vw,190px);line-height:1;color:var(--red)}
+#who{position:absolute;top:40vh;width:100%;text-align:center;font-weight:800;font-size:min(9vw,72px);background:linear-gradient(90deg,#1fa3c5,#6ccb5f);-webkit-background-clip:text;background-clip:text;color:transparent}
+#pw{position:absolute;top:56vh;left:50%;transform:translateX(-50%);width:min(70vw,420px);height:64px;border:0;border-radius:16px;background:var(--g);color:#fff;font:400 1.4rem "Noto Sans",sans-serif;text-align:center;cursor:pointer}
+#pw::placeholder{color:#fffa}
+#apps{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);width:100px;height:112px;border:0;border-radius:18px;background:var(--red);font:400 1.15rem/1.35 "Noto Sans",sans-serif;cursor:pointer}
+#apps b{font-weight:400;background:var(--g) fixed;-webkit-background-clip:text;background-clip:text;color:transparent}
+.panel{position:absolute;left:50%;bottom:262px;transform:translateX(-50%);width:min(450px,92vw);max-height:calc(100vh - 300px);overflow:auto;background:var(--red);border-radius:18px;padding:26px 22px;display:none}
+.panel.on{display:block}.panel h2{margin:0 0 6px;font-size:1.3rem}
+.row{display:flex;justify-content:center;align-items:flex-end;gap:12px;margin-bottom:14px}
+.tile{border:0;border-radius:22%;background:#000;color:#fff;font:700 1.5rem "Noto Sans",sans-serif;display:grid;place-items:center;cursor:pointer;transition:width .15s,height .15s}
+.tile:hover,.tile:focus-visible{width:83px!important;height:109px!important}
+input[type=text],input[type=password],#sq{display:block;width:100%;margin-top:4px;padding:12px 14px;border:0;border-radius:12px;font:inherit;background:#000;color:#fff}
+.go{margin-top:16px;width:100%;padding:12px;border:0;border-radius:12px;background:#fff;color:#000;font:600 1rem "Noto Sans",sans-serif;cursor:pointer}
+.pk{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#0007;border-radius:12px;padding:10px 12px;margin-top:8px}
+.pk small{opacity:.85}.pk button,.end{border:0;border-radius:8px;padding:6px 14px;background:#fff;color:#000;font-weight:600;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:6px 4px;border-bottom:1px solid #0004;font-size:.92rem}td:first-child{word-break:break-all}
+#setup{position:absolute;inset:0;display:none;place-items:center;z-index:6}
+body.setup #setup{display:grid}body.setup #lock,body.setup #dock{display:none}
+.card{width:min(480px,92vw);max-height:92vh;overflow:auto;background:var(--red);border-radius:18px;padding:26px 22px}
+.card h2{margin:0 0 6px;font-size:1.4rem}.card label{display:block;margin-top:12px;font-size:.9rem}
+fieldset{border:0;margin:14px 0 0;padding:0}legend{font-size:.9rem;padding:0}
+.opt{display:flex;gap:10px;align-items:flex-start;margin-top:8px}.opt input{margin-top:4px}.msg{margin:10px 0 0;min-height:1.3em}
+#status{position:absolute;top:12px;left:16px;font-size:.9rem;z-index:6}
+#top{position:absolute;top:12px;right:14px;display:flex;gap:8px;align-items:center;z-index:7}
+#top button,#edu{border:2px solid #000;border-radius:10px;padding:6px 12px;background:#0009;color:#fff;font:600 .85rem "Noto Sans",sans-serif}
+#top button{cursor:pointer}#edu{display:none;border-color:transparent}
+body:not(.in) #modebtn{display:none}
+#top #kill{border-color:var(--red);color:var(--red);background:#000}
+#top #upd.new{background:#fff;color:#000}
+#dock{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:8px;padding:8px 12px;border-radius:22px;background:#140f2899;backdrop-filter:blur(14px);z-index:5;max-width:98vw}
+.ic{position:relative;flex:none;width:50px;height:50px;border:0;border-radius:13px;color:#fff;font:700 1.15rem "Noto Sans",sans-serif;cursor:pointer;transform-origin:bottom center;transition:transform .08s}
+.ic span{position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);background:#3b1a6b;padding:4px 10px;border-radius:8px;font:500 .85rem "Noto Sans",sans-serif;white-space:nowrap;display:none}
+.ic:hover span{display:block}
+:focus-visible{outline:3px solid #fff;outline-offset:2px}
+input[type=range]{width:100%;margin-top:6px}
+textarea{width:100%;height:220px;margin-top:8px;padding:12px;border:0;border-radius:12px;font:inherit;background:#000;color:#fff;resize:vertical}
+.sec{margin-top:16px}.sec>b{display:block;margin-bottom:4px}
+.sw{display:inline-block;width:44px;height:30px;border-radius:8px;border:2px solid #fff;margin:4px 6px 0 0;cursor:pointer}
+body:not(.in) #parentbtn{display:none!important}
+</style></head>
+<body>
+<section id="lock"><div id="clock"></div><div id="who"></div><button id="pw">Enter Password</button></section>
+<div id="top"><span id="edu"></span><button id="parentbtn" style="display:none">Parent</button><button id="modebtn">Work Mode</button><button id="upd" title="Check for updates">Version</button><button id="kill" title="Force power off now">⏻ Kill</button></div>
+<div id="status" role="status"></div>
+<section id="setup"><div class="card">
+  <form id="s1"><h2>Set up EDUDB8OS</h2><p>Choose the name and password you will sign in with, and a mode.</p>
+    <label>Your name<input id="sn" type="text" maxlength="30" autocomplete="off" required></label>
+    <label>Password<input id="sp" type="password" minlength="4" required></label>
+    <label>Confirm password<input id="sc" type="password" required></label>
+    <fieldset><legend>Mode</legend>
+      <label class="opt"><input type="radio" name="mode" value="work" checked><span><b>Work Mode</b><br>All productivity features, terminal and full app store.</span></label>
+      <label class="opt"><input type="radio" name="mode" value="edu"><span><b>EDU Mode</b><br>For kids: games and learning apps only, no terminal apps, Firefox limited to 45 minutes a day, only approved websites.</span></label>
+    </fieldset>
+    <p class="msg" id="m1"></p><button class="go">Continue</button></form>
+  <form id="s2" hidden><h2>Choose your apps</h2><p>Picked apps install in the background and appear in the Apps menu.</p>
+    <div id="sl"></div><p class="msg" id="m2"></p><button class="go">Finish setup</button></form>
+</div></section>
+<section id="desk">
+  <div id="drawer" class="panel" aria-label="Apps"></div>
+  <div id="store" class="panel" aria-label="App Store"><input id="sq" placeholder="Search apps and press Enter"><div id="sr"></div></div>
+  <div id="tasks" class="panel" aria-label="Task Manager"><h2>Task Manager</h2><div id="tsum"></div><table><tbody id="tt"></tbody></table></div>
+  <div id="modepanel" class="panel" aria-label="Switch mode"><h2 id="mh"></h2><p>Enter your password to switch.</p><input id="mp" type="password" placeholder="Password"><p class="msg" id="mm"></p><button class="go" id="mgo">Switch</button></div>
+  <div id="settings" class="panel" aria-label="Settings"><h2>Settings</h2>
+    <div class="sec"><b>Wi-Fi</b><div id="wifi">Loading…</div></div>
+    <div class="sec"><b>Sound</b><input id="vol" type="range" min="0" max="100" aria-label="Volume"></div>
+    <div class="sec"><b>Brightness</b><input id="bri" type="range" min="5" max="100" aria-label="Brightness"></div>
+    <div class="sec"><b>Wallpaper</b><div id="walls"></div></div></div>
+  <div id="notes" class="panel" aria-label="Notes"><h2>Notes</h2><textarea id="nt" placeholder="Type here. Notes save automatically."></textarea></div>
+  <div id="parent" class="panel" aria-label="Parent controls"><h2>Parent controls</h2>
+    <div id="pgate"><p>Enter your password.</p><input id="pp" type="password" placeholder="Password"><p class="msg" id="pm"></p><button class="go" id="pgo">Unlock</button></div>
+    <div id="pbody" hidden></div></div>
+  <button id="apps"><b>APPS<br>Click<br>Here</b></button>
+</section>
+<nav id="dock" aria-label="Dock"></nav>
+<script>
+const T="__TOKEN__",$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const api=(p,b={})=>fetch(p,{method:"POST",headers:{"X-Token":T,"Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const say=t=>{$("#status").textContent=t;setTimeout(()=>{if($("#status").textContent===t)$("#status").textContent=""},6000)};
+let INFO={name:"",mode:"work",live:false};
+
+/* ---------- dock (name, target, color, glyph) ---------- */
+const FF=["Firefox","firefox","#e66000","F"],FILES=["Files","files","#3b7dd8","📁"],STORE=["App Store","store","#1b8cf0","A"],TASKS=["Task Manager","tasks","#2d6a4f","▤"],SETTINGS=["Settings","settings","#6c757d","⚙"],NOTES=["Notes","notes","#f2c744","✎"],SHOT=["Screenshot","shot","#8e44ad","⧉"];
+const WORK=[FF,["Terminal","foot","#1c1c24",">_"],FILES,["Claude","https://claude.ai","#d97757","C"],["Google","https://www.google.com","#4285f4","G"],["GitHub","https://github.com","#171515","GH"],
+["Gmail","https://mail.google.com","#ea4335","M"],["OneDrive","https://onedrive.live.com","#0f6cbd","O"],["Word","https://word.cloud.microsoft","#185abd","W"],["Excel","https://excel.cloud.microsoft","#107c41","X"],
+["PowerPoint","https://powerpoint.cloud.microsoft","#c43e1c","P"],["OneNote","https://onenote.cloud.microsoft","#7719aa","N"],["Outlook","https://outlook.cloud.microsoft","#0a64ad","Ou"],
+["Teams","https://teams.cloud.microsoft","#5b5fc7","T"],["Roblox","https://www.roblox.com","#2b2b2b","R"],["Gemini","https://gemini.google.com","#6b7cf0","✦"],["YouTube","https://www.youtube.com","#ff0033","▶"],
+["My Webapps","http://store.app.local/","#0f7b7d","▦"],STORE,TASKS,NOTES,SHOT,SETTINGS];
+const EDU=[FF,FILES,["Scratch","https://scratch.mit.edu","#ff8c1a","S"],["PBS Kids","https://pbskids.org","#00a859","P"],["Khan Academy","https://www.khanacademy.org","#14bf96","K"],
+["Code.org","https://code.org","#00adbc","C"],["NatGeo Kids","https://kids.nationalgeographic.com","#d9a900","N"],["Wikipedia","https://www.wikipedia.org","#555","W"],STORE,TASKS,SETTINGS];
+let DOCK=WORK;const dock=$("#dock");
+function renderDock(){DOCK=(INFO.mode==="edu"?EDU:WORK).slice();
+  if(INFO.live&&INFO.mode!=="edu")DOCK.push(["Install EDUDB8OS","install","#c0392b","⭳"]);
+  dock.innerHTML=DOCK.map((d,i)=>`<button class="ic" data-i="${i}" style="background:${d[2]}"><span>${d[0]}</span>${d[3]}</button>`).join("")}
+dock.onclick=async e=>{const b=e.target.closest(".ic");if(!b)return;const t=DOCK[b.dataset.i][1];
+  if(["store","tasks","settings","notes"].includes(t))return toggle(t);
+  if(t==="shot"){const r=await api("/api/screenshot").catch(()=>({}));return say(r.ok?"Screenshot saved in Pictures.":"Screenshot failed.")}
+  const r=await api("/api/launch",["foot","files","install"].includes(t)?{cmd:t}:{url:t==="firefox"?"":t}).catch(()=>({}));if(r.msg)say(r.msg)};
+dock.onmousemove=e=>{const x=e.clientX-dock.getBoundingClientRect().left;
+  for(const b of dock.children){const d=Math.abs(x-(b.offsetLeft+b.offsetWidth/2));b.style.transform=`scale(${1+.9*Math.exp(-((d/85)**2))})`}};
+dock.onmouseleave=()=>{for(const b of dock.children)b.style.transform=""};
+
+/* ---------- lock screen ---------- */
+const tick=()=>{const d=new Date();$("#clock").textContent=(d.getHours()%12||12)+":"+String(d.getMinutes()).padStart(2,"0")};tick();setInterval(tick,10000);
+const unlock=()=>{document.body.classList.add("in");loadApps()};
+$("#pw").onclick=()=>{const i=document.createElement("input");i.type="password";i.id="pw";i.placeholder="Password";$("#pw").replaceWith(i);i.focus();
+  i.onkeydown=async e=>{if(e.key!=="Enter")return;const r=await api("/api/login",{password:i.value}).catch(()=>({ok:false}));
+    if(r.ok)unlock();else{i.value="";i.placeholder="Wrong password, try again"}}};
+
+/* ---------- panels: apps, store, tasks, mode ---------- */
+const SC=[1,1,.87,.87,.6,.6,.36,.36];
+function drawer(list){const D=$("#drawer");D.innerHTML="";
+  for(let i=0,r=0;i<list.length;i+=4,r++){const s=SC[Math.min(r,7)],row=document.createElement("div");row.className="row";
+    list.slice(i,i+4).forEach(a=>{const b=document.createElement("button");b.className="tile";b.title=a.name;b.textContent=a.name[0];
+      b.style.cssText=`width:${83*s}px;height:${109*s}px`;
+      b.onclick=async()=>{const x=await api("/api/launch",a.id?{id:a.id}:{url:a.url}).catch(()=>({}));if(x.msg)say(x.msg)};row.append(b)});D.append(row)}}
+const loadApps=()=>api("/api/apps").catch(()=>[]).then(l=>drawer([...l,...DOCK.filter(d=>d[1].startsWith("http")).map(d=>({name:d[0],url:d[1]}))]));
+let upd=0,tt=null;
+function toggle(id){for(const p of $$(".panel"))if(p.id!==id)p.classList.remove("on");$("#"+id).classList.toggle("on");
+  clearInterval(tt);if(id==="tasks"&&$("#tasks").classList.contains("on")){pollTasks();tt=setInterval(pollTasks,2000)}
+  if($("#"+id).classList.contains("on")){if(id==="settings")loadSettings();if(id==="notes")api("/api/notes").then(r=>$("#nt").value=r.text||"").catch(()=>{})}
+  if(id==="store"&&$("#store").classList.contains("on")){
+    if(INFO.mode==="edu")search();
+    if(!upd){upd=1;$("#sr").textContent="Updating package lists…";api("/api/refresh").then(()=>{$("#sr").textContent="Type a name and press Enter.";if(INFO.mode==="edu")search()}).catch(()=>$("#sr").textContent="Package lists could not be updated.")}}}
+$("#apps").onclick=()=>toggle("drawer");
+document.onkeydown=e=>{if(e.key==="Escape"){clearInterval(tt);for(const p of $$(".panel"))p.classList.remove("on")}};
+async function search(){const r=await api("/api/search",{q:$("#sq").value}).catch(()=>[]);
+  $("#sr").innerHTML=Array.isArray(r)&&r.length?r.map(p=>`<div class="pk"><div><b>${esc(p.name)}</b><br><small>${esc(p.desc)}</small></div><button data-p="${esc(p.name)}">Install</button></div>`).join(""):"No apps found."}
+$("#sq").onkeydown=e=>{if(e.key==="Enter")search()};
+$("#sr").onclick=async e=>{const p=e.target.dataset.p;if(!p)return;e.target.textContent="Installing…";e.target.disabled=true;
+  const r=await api("/api/install",{pkg:p}).catch(()=>({ok:false}));e.target.textContent=r.ok?"Installed":"Failed";if(r.ok)loadApps()};
+async function pollTasks(){const r=await api("/api/tasks").catch(()=>null);if(!r)return;
+  $("#tsum").textContent=`CPU ${r.cpu}%  ·  Memory ${r.used} of ${r.total} MB`;
+  $("#tt").innerHTML=r.rows.map(p=>`<tr><td>${esc(p.name)}</td>${r.edu?"":`<td>${p.cpu}%</td>`}<td>${p.mem} MB</td><td>${p.locked?"":`<button class="end" data-p="${p.pid}">End</button>`}</td></tr>`).join("")||"<tr><td>No open apps.</td></tr>"}
+$("#tt").onclick=async e=>{const p=e.target.dataset.p;if(p){e.target.disabled=true;await api("/api/tasks/end",{pid:+p}).catch(()=>{});setTimeout(pollTasks,800)}};
+$("#modebtn").onclick=()=>{const to=INFO.mode==="edu"?"work":"edu";$("#mh").textContent=`Switch to ${to==="edu"?"EDU":"Work"} Mode`;$("#mgo").dataset.to=to;$("#mm").textContent="";toggle("modepanel");$("#mp").focus()};
+$("#mgo").onclick=async()=>{const to=$("#mgo").dataset.to,r=await api("/api/mode",{mode:to,password:$("#mp").value}).catch(()=>({ok:false}));
+  if(!r.ok)return $("#mm").textContent="Wrong password.";$("#mp").value="";INFO.mode=to;$("#modepanel").classList.remove("on");applyMode();loadApps()};
+function applyMode(){const e=INFO.mode==="edu";$("#parentbtn").style.display=e?"inline-block":"none";$("#modebtn").textContent=e?"EDU Mode":"Work Mode";$("#edu").style.display=e?"block":"none";renderDock();refreshEdu()}
+const refreshEdu=()=>{if(INFO.mode==="edu")api("/api/edu").then(r=>$("#edu").textContent=r.left>0?`Firefox: ${r.left} min left today`:"Firefox time is up for today").catch(()=>{})};
+setInterval(refreshEdu,30000);
+
+/* ---------- settings: Wi-Fi, sound, brightness, wallpaper ---------- */
+async function wifi(){const r=await api("/api/wifi/list").catch(()=>[]);
+  $("#wifi").innerHTML=r.length?r.map(n=>`<div class="pk" data-s="${esc(n.ssid)}"><div><b>${esc(n.ssid)}</b>${n.active?" ✓":""}<br><small>${n.signal}%${n.secure?" · secured":""}</small></div><span>${n.active?"":`<button data-sec="${n.secure?1:0}">Connect</button>`}</span></div>`).join(""):"No Wi-Fi networks found."}
+$("#wifi").onclick=async e=>{const b=e.target.closest("button");if(!b)return;const row=b.closest(".pk"),ssid=row.dataset.s;
+  if(b.dataset.join){const pw=row.querySelector("input").value;b.textContent="Joining…";b.disabled=true;
+    const r=await api("/api/wifi/connect",{ssid,password:pw}).catch(()=>({ok:false}));say(r.ok?`Connected to ${ssid}`:"Could not connect. Check the password.");return wifi()}
+  if(b.dataset.sec==="1"){row.querySelector("span").innerHTML='<input type="password" placeholder="Password" style="width:120px;padding:6px"><button data-join="1">Join</button>';row.querySelector("input").focus()}
+  else{b.textContent="Joining…";const r=await api("/api/wifi/connect",{ssid,password:""}).catch(()=>({ok:false}));say(r.ok?`Connected to ${ssid}`:"Could not connect.");wifi()}};
+async function loadSettings(){wifi();
+  for(const [id,url] of [["#vol","/api/volume"],["#bri","/api/brightness"]]){const r=await api(url,{}).catch(()=>({}));
+    $(id).disabled=r.value==null;if(r.value!=null)$(id).value=r.value;$(id).title=r.value==null?"Not available on this computer yet":""}}
+$("#vol").onchange=e=>api("/api/volume",{set:+e.target.value});$("#bri").onchange=e=>api("/api/brightness",{set:+e.target.value});
+const WALLS=["linear-gradient(90deg,#ff0f1f 0%,#2323ff 35%,#7f25ff 70%,#845040 100%)","linear-gradient(135deg,#0f2027,#2c5364)","linear-gradient(135deg,#ff512f,#dd2476)","linear-gradient(135deg,#134e5e,#71b280)","linear-gradient(135deg,#0f0c29,#302b63,#24243e)"];
+const setWall=n=>document.documentElement.style.setProperty("--g",WALLS[n]||WALLS[0]);
+$("#walls").innerHTML=WALLS.map((g,i)=>`<span class="sw" data-w="${i}" style="background:${g}" role="button" aria-label="Wallpaper ${i+1}"></span>`).join("");
+$("#walls").onclick=e=>{const w=e.target.dataset.w;if(w!==undefined){setWall(+w);api("/api/prefs/set",{wallpaper:+w})}};
+api("/api/prefs").then(p=>setWall(p.wallpaper||0)).catch(()=>{});
+/* notes */
+let nto=null;$("#nt").oninput=()=>{clearTimeout(nto);nto=setTimeout(()=>api("/api/notes/save",{text:$("#nt").value}),600)};
+/* parent controls (EDU Mode) */
+let PPW="";
+$("#parentbtn").onclick=()=>{PPW="";$("#pgate").hidden=false;$("#pbody").hidden=true;$("#pm").textContent="";$("#pp").value="";toggle("parent");$("#pp").focus()};
+const parentCall=(action,value)=>api("/api/parent",{password:PPW,action,value}).catch(()=>({ok:false}));
+async function parentShow(){const r=await parentCall("get");if(!r.ok){PPW="";$("#pgate").hidden=false;$("#pbody").hidden=true;return}
+  $("#pgate").hidden=true;$("#pbody").hidden=false;
+  $("#pbody").innerHTML=`<p>Today: ${r.used} of ${r.limit} minutes of Firefox used.</p><label>Daily Firefox minutes<input id="plim" type="number" min="5" max="180" value="${r.limit}"></label><button class="go" id="plimgo">Save time limit</button>
+  <div class="sec"><b>Allowed websites</b>${r.sites.map(x=>`<div class="pk"><span>${esc(x)}</span><button data-rm="${esc(x)}">Remove</button></div>`).join("")||"<small>None added. The built-in list (Scratch, PBS Kids, Khan Academy, Code.org, NatGeo Kids, Wikipedia) is always allowed.</small>"}
+  <input id="pnew" type="text" placeholder="example.com" style="margin-top:10px"><button class="go" id="paddgo">Allow this website</button></div><p class="msg" id="pm2"></p>`}
+$("#pgo").onclick=async()=>{PPW=$("#pp").value;const r=await parentCall("get");if(!r.ok){PPW="";return $("#pm").textContent="Wrong password."}parentShow()};
+$("#pbody").onclick=async e=>{const t=e.target;let r;
+  if(t.id==="plimgo")r=await parentCall("limit",+$("#plim").value);
+  else if(t.id==="paddgo")r=await parentCall("add",$("#pnew").value);
+  else if(t.dataset.rm)r=await parentCall("remove",t.dataset.rm);
+  else return;
+  if(r&&r.ok){refreshEdu();parentShow()}else $("#pm2").textContent="That did not work. Check the value and try again."};
+
+/* ---------- first-run setup ---------- */
+const WORK_PICKS=[["LibreOffice","libreoffice"],["VLC","vlc"],["GIMP","gimp"],["Thunderbird","thunderbird"],["Inkscape","inkscape"],["Audacity","audacity"],["Chromium","chromium"]];
+const EDU_PICKS=[["GCompris (learning games)","gcompris-qt"],["Tux Paint","tuxpaint"],["Tux Math","tuxmath"],["Tux Typing","tuxtype"],["SuperTux (platform game)","supertux"]];
+const showLock=n=>{$("#who").textContent=n;document.body.classList.remove("setup")};
+api("/api/account").then(a=>{INFO=a;a.name?showLock(a.name):document.body.classList.add("setup");applyMode()}).catch(()=>{$("#who").textContent="Shell offline"});
+$("#s1").onsubmit=e=>{e.preventDefault();
+  if($("#sp").value!==$("#sc").value)return $("#m1").textContent="The passwords do not match.";
+  const m=document.querySelector("input[name=mode]:checked").value,picks=m==="edu"?EDU_PICKS:WORK_PICKS;
+  $("#sl").innerHTML=picks.map(a=>`<label class="opt"><input type="checkbox" value="${a[1]}" ${m==="edu"?"checked":""}><span>${a[0]}</span></label>`).join("");
+  $("#s1").hidden=true;$("#s2").hidden=false};
+$("#s2").onsubmit=async e=>{e.preventDefault();const m=document.querySelector("input[name=mode]:checked").value,
+  picks=$$("#sl input:checked").map(i=>[i.nextElementSibling.textContent,i.value]);
+  const r=await api("/api/setup",{name:$("#sn").value.trim(),password:$("#sp").value,mode:m}).catch(()=>({ok:false}));
+  if(!r.ok)return $("#m2").textContent="Setup failed. Use a name with letters or numbers, and a password of 4 or more characters.";
+  INFO.mode=m;INFO.name=$("#sn").value.trim();showLock(INFO.name);applyMode();installAll(picks)};
+async function installAll(l){if(!l.length)return;const st=$("#status");st.textContent="Getting ready to install apps…";
+  await api("/api/refresh").catch(()=>{});
+  for(let i=0;i<l.length;i++){st.textContent=`Installing ${l[i][0]} (${i+1} of ${l.length})…`;await api("/api/install",{pkg:l[i][1]}).catch(()=>{});await loadApps()}
+  st.textContent="Apps installed. Open the Apps menu to find them.";setTimeout(()=>st.textContent="",8000)}
+
+/* ---------- updates + kill ---------- */
+let UPD=null;
+const chk=()=>api("/api/update/check").then(r=>{UPD=r;$("#upd").textContent=r.available?`Update to v${r.remote}`:`Version ${r.local}`;$("#upd").classList.toggle("new",r.available)}).catch(()=>{});chk();
+const back=()=>fetch("/health").then(()=>location.reload()).catch(()=>setTimeout(back,700));
+$("#upd").onclick=async()=>{
+  if(!UPD||!UPD.available){await chk();return say(UPD&&UPD.available?"Update found. Click again to install.":UPD&&UPD.remote===null?"Could not reach updates. Is the repo public?":"You are up to date.")}
+  $("#status").textContent="Downloading update…";
+  const r=await api("/api/update/install").catch(()=>({ok:false,msg:"Update failed."}));
+  if(r.ok){$("#status").textContent="Updated. Restarting the shell…";setTimeout(back,1500)}else say(r.msg)};
+$("#kill").onclick=()=>{api("/api/kill").catch(()=>{})};
+</script></body></html>

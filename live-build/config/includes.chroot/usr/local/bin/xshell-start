@@ -1,0 +1,5 @@
+#!/bin/sh
+python3 /usr/local/bin/xshelld &
+until curl -sf http://127.0.0.1:8081/health >/dev/null; do sleep 0.3; done
+mkdir -p /tmp/xshell-profile
+exec env MOZ_ENABLE_WAYLAND=1 firefox-esr --kiosk --name xshell --no-remote --profile /tmp/xshell-profile http://127.0.0.1:8081/
